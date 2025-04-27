@@ -22,7 +22,7 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
           title="Change resume color"
           onClick={() => setShowPopover(true)}
           >
-          <PaletteIcon className="size-5" />
+          <PaletteIcon className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="border-none bg-transparent shadow-none" align="end">

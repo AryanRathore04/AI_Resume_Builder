@@ -40,7 +40,7 @@ const BorderStyleButton = ({
       title="Change border style"
       onClick={handleClick}
     >
-      <Icon className="size-5" />
+      <Icon className="h-5 w-5" />
     </Button>
   );
 };

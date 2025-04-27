@@ -7,11 +7,20 @@ import Footer from "./Footer";
 import { useState } from "react";
 import { ResumeValues } from "@/lib/validation";
 import ResumePreviewSection from "./ResumePreviewSection";
+import { cn } from "@/lib/utils";
+import useUnloadWarning from "@/hooks/useUnloadWarning";
+import useAutoSaveResume from "./useAutoSaveResume";
 
 const ResumeEditor = () => {
   const searchParams = useSearchParams();
 
   const [resumeData, setResumeData] = useState<ResumeValues>({});
+
+  const [showSmResumePreview, setShowSmResumePreview] = useState(false);
+
+  const {isSaving, hasUnsavedChanges} = useAutoSaveResume(resumeData)
+
+  useUnloadWarning(hasUnsavedChanges);
 
   const currentStep = searchParams.get("step") || steps[0].key;
 
@@ -25,6 +34,8 @@ const ResumeEditor = () => {
     (step) => step.key === currentStep,
   )?.component;
 
+  
+
   return (
     <div className="flex grow flex-col">
       <header className="space-y-1.5 border-b px-3 py-5 text-center">
@@ -36,7 +47,12 @@ const ResumeEditor = () => {
       </header>
       <main className="relative grow">
         <div className="absolute top-0 bottom-0 flex w-full">
-          <div className="w-full space-y-6 overflow-y-auto p-3 md:w-1/2">
+          <div
+            className={cn(
+              "w-full space-y-6 overflow-y-auto p-3 md:block md:w-1/2",
+              showSmResumePreview && "hidden",
+            )}
+          >
             <Breadcrumbs currentStep={currentStep} setCurrentStep={setStep} />
             {FormComponent && (
               <FormComponent
@@ -49,11 +65,17 @@ const ResumeEditor = () => {
           <ResumePreviewSection
             resumeData={resumeData}
             setResumeData={setResumeData}
+            className={cn(showSmResumePreview && "flex")}
           />
         </div>
       </main>
 
-      <Footer currentStep={currentStep} setCurrentStep={setStep} />
+      <Footer
+        currentStep={currentStep}
+        setCurrentStep={setStep}
+        showSmResumePreview={showSmResumePreview}
+        setShowSmResumePreview={setShowSmResumePreview}
+      />
     </div>
   );
 };
