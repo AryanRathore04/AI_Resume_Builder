@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
+        <body className={inter.className} suppressContentEditableWarning>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -32,7 +32,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <Toaster />
+            <Toaster position="bottom-right" richColors/>
           </ThemeProvider>
         </body>
       </html>
