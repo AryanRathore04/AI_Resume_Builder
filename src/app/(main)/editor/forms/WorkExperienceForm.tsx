@@ -46,13 +46,14 @@ const WorkExperienceForm = ({ resumeData, setResumeData }: EditorFormProps) => {
 
   useEffect(() => {
     const { unsubscribe } = form.watch(async (values) => {
-      const isValid = await form.trigger();
-      if (!isValid) return;
-      setResumeData({
-        ...resumeData,
-        workExperiences:
-          values.workExperiences?.filter((exp) => exp !== undefined) || [],
-      });
+      const t = setTimeout(() => {
+        setResumeData({
+          ...resumeData,
+          workExperiences:
+            values.workExperiences?.filter((exp) => exp !== undefined) || [],
+        });
+      }, 100);
+      return () => clearTimeout(t);
     });
     return unsubscribe;
   }, [form, resumeData, setResumeData]);
@@ -164,7 +165,7 @@ function WorkExperienceItem({
     <div
       className={cn(
         "bg-background space-y-3 rounded-md border p-3",
-        isDragging && "z-50 cursor-grab shadow-xl relative",
+        isDragging && "relative z-50 cursor-grab shadow-xl",
       )}
       ref={setNodeRef}
       style={{

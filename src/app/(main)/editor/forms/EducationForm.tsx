@@ -45,12 +45,15 @@ const EducationForm = ({ resumeData, setResumeData }: EditorFormProps) => {
 
   useEffect(() => {
     const { unsubscribe } = form.watch(async (values) => {
-      const isValid = await form.trigger();
-      if (!isValid) return;
-      setResumeData({
-        ...resumeData,
-        educations: values.educations?.filter((edu) => edu !== undefined) || [],
-      });
+      const t = setTimeout(() => {
+        setResumeData({
+          ...resumeData,
+          educations:
+            values.educations?.filter((edu) => edu !== undefined) || [],
+        });
+      }, 100);
+
+      return () => clearTimeout(t);
     });
     return unsubscribe;
   }, [form, resumeData, setResumeData]);
