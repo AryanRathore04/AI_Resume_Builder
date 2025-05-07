@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className} suppressContentEditableWarning>
+        <body className={inter.className} suppressHydrationWarning={true}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

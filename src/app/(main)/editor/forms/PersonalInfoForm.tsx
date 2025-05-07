@@ -122,7 +122,7 @@ const PersonalInfoForm = ({ resumeData, setResumeData }: EditorFormProps) => {
               <FormItem>
                 <FormLabel>JobTitle</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter your Last name" />
+                  <Input {...field} placeholder="Enter your Job title" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
