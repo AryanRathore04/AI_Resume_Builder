@@ -2,7 +2,7 @@ import useDimensions from "@/hooks/useDimensions";
 import { cn } from "@/lib/utils";
 import { ResumeValues } from "@/lib/validation";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { formatDate } from "date-fns";
 import { Badge } from "./ui/badge";
 import { BorderStyles } from "@/app/(main)/editor/BorderStyleButton";
@@ -10,9 +10,14 @@ import { BorderStyles } from "@/app/(main)/editor/BorderStyleButton";
 interface ResumePreviewProps {
   resumeData: ResumeValues;
   className?: string;
+  contentRef?: React.Ref<HTMLDivElement>;
 }
 
-const ResumePreview = ({ resumeData, className }: ResumePreviewProps) => {
+const ResumePreview = ({
+  resumeData,
+  className,
+  contentRef,
+}: ResumePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width } = useDimensions(containerRef);
 
@@ -29,6 +34,8 @@ const ResumePreview = ({ resumeData, className }: ResumePreviewProps) => {
         style={{
           zoom: (1 / 794) * width,
         }}
+        ref={contentRef}
+        id="resumePreviewContent"
       >
         <PersonalInfoHeader resumeData={resumeData} />
         <SummarySection resumeData={resumeData} />
