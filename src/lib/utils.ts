@@ -47,6 +47,6 @@ export function mapToResumeValues(data: ResumeServerData): ResumeValues {
     skills: data.skills,
     borderStyle: data.borderStyle,
     colorHex: data.colorHex,
-    summary: data.summery || undefined,
+    summary: data.summary || undefined,
   };
 }
