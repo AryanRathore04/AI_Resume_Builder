@@ -25,11 +25,11 @@ const SubscriptionLevelProvider = ({
 
 export default SubscriptionLevelProvider;
 
-export function userSubscriptionLevel() {
+export function useSubscriptionLevel() {
     const context = useContext(SubscriptionLevelContext);
     if (context === undefined) {
         throw new Error(
-            "userSubscriptionLevel must be used within a SubscriptionLevelProvider",
+            "useSubscriptionLevel must be used within a SubscriptionLevelProvider",
         );
     }
     return context;
