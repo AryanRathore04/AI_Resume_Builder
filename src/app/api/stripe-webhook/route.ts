@@ -53,7 +53,7 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
     throw new Error("User ID not found in session metadata");
   }
 
-  (await clerkClient()).users.updateUserMetadata(userId, {
+   await (await clerkClient()).users.updateUserMetadata(userId, {
     privateMetadata: {
       stripeCustomerId: session.currency as string,
     },
@@ -68,40 +68,41 @@ async function handleSubscriptionCreatedOrUpdated(subscriptionId: string) {
     subscription.status === "trialing" ||
     subscription.status === "past_due"
   ) {
-
     await prisma.userSubscription.upsert({
-        where: {
-            userId: subscription.metadata.userId,
-        },
-        create: {
-            userId: subscription.metadata.userId,
-            stripeSubscriptionId: subscription.id,
-            stripeCustomerId: subscription.customer as string,
-            stripePriceId: subscription.items.data[0].price.id,
-            stripeCurrentPeriodEnd: new Date(
-                subscription.current_period_end * 1000,
-            ),
-            stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
-        },
-        update: {
-             stripePriceId: subscription.items.data[0].price.id,
-             stripeCurrentPeriodEnd: new Date(
-                subscription.current_period_end * 1000,
-            ),
-            stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
-        }
-    })
-
+      where: {
+        userId: subscription.metadata.userId,
+      },
+      create: {
+        userId: subscription.metadata.userId,
+        stripeSubscriptionId: subscription.id,
+        stripeCustomerId: subscription.customer as string,
+        stripePriceId: subscription.items.data[0].price.id,
+        stripeCurrentPeriodEnd: new Date(
+          subscription.current_period_end * 1000,
+        ),
+        stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+      update: {
+        stripePriceId: subscription.items.data[0].price.id,
+        stripeCurrentPeriodEnd: new Date(
+          subscription.current_period_end * 1000,
+        ),
+        stripeCancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+    });
   } else {
     await prisma.userSubscription.deleteMany({
-        where: {
-            stripeCustomerId: subscription.customer as string,
-        }
-
-    })
+      where: {
+        stripeCustomerId: subscription.customer as string,
+      },
+    });
   }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log("handleSubscriptionDeleted");
+  await prisma.userSubscription.deleteMany({
+    where: {
+      stripeCustomerId: subscription.customer as string,
+    },
+  });
 }
