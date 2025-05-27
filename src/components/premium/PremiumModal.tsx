@@ -1,139 +1,69 @@
 "use client";
-
-// Add Razorpay type to the window object
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import usePremiumModal from "@/hooks/usePremiumModal";
 import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs"; // If using Clerk
-
-const PremiumFeatures = ["AI Tool", "Upto 3 resumes"];
-const PremiumPlusFeatures = ["Infinite resumes", "Design customizations"];
+import { useUser } from "@clerk/nextjs";
 
 const PremiumModal = () => {
   const { open, setOpen } = usePremiumModal();
   const [loading, setLoading] = useState(false);
-  const { user } = useUser(); // Optional, if you want email
+  const { user } = useUser();
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.async = true;
+    document.body.appendChild(s);
   }, []);
 
-  const handleRazorpayCheckout = async (plan: "premium" | "premium-plus") => {
+  const checkout = async (plan: "premium" | "premium-plus") => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const res = await fetch("/api/razorpay/order", {
+      const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
-
-      const data = await res.json();
-
-      if (!data.id) {
-        throw new Error("Invalid order ID");
-      }
-
+      const { id, amount, currency } = await res.json();
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-        amount: data.amount,
-        currency: data.currency,
-        name: "Resume AI",
-        description: `${plan === "premium" ? "Premium" : "Premium Plus"} Subscription`,
-        order_id: data.id,
-        handler: function (response: any) {
-          toast.success("Payment successful!");
-          console.log("Razorpay response:", response);
-          // Optionally call your backend to confirm payment
-        },
-        prefill: {
-          email: user?.primaryEmailAddress?.emailAddress || "",
-        },
-        theme: {
-          color: "#10b981",
-        },
+        amount,
+        currency,
+        name: "AI Resume Builder",
+        description: plan === "premium" ? "Premium Plan" : "Premium Plus Plan",
+        order_id: id,
+        prefill: { email: user?.primaryEmailAddress?.emailAddress || "" },
+        handler: () => toast.success("Payment successful!"),
+        theme: { color: "#10b981" },
       };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Error during Razorpay checkout:", error);
-      toast.error("Payment failed. Please try again.");
+      new (window as any).Razorpay(options).open();
+    } catch {
+      toast.error("Payment initiation failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(open) => {
-        if (!loading) {
-          setOpen(open);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={(o) => !loading && setOpen(o)}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Resume Builder AI Premium</DialogTitle>
+          <DialogTitle>Upgrade to Premium</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          <p>Get a premium subscription to unlock more features.</p>
-          <div className="flex">
-            <div className="flex w-1/2 flex-col space-y-5">
-              <h3 className="text-center text-lg font-bold">Premium</h3>
-              <ul className="list-inside space-y-2">
-                {PremiumFeatures.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="size-4 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => handleRazorpayCheckout("premium")}
-                disabled={loading}
-              >
-                Get Premium
-              </Button>
-            </div>
-            <div className="mx-6 border-l" />
-            <div className="flex w-1/2 flex-col space-y-5">
-              <h3 className="bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-center text-lg font-bold text-transparent">
-                Premium Plus
-              </h3>
-              <ul className="list-inside space-y-2">
-                {PremiumPlusFeatures.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="size-4 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                variant="premium"
-                onClick={() => handleRazorpayCheckout("premium-plus")}
-                disabled={loading}
-              >
-                Get Premium Plus
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* … your feature lists … */}
+        <Button onClick={() => checkout("premium")} disabled={loading}>
+          Get Premium
+        </Button>
+        <Button
+          variant="premium"
+          onClick={() => checkout("premium-plus")}
+          disabled={loading}
+        >
+          Get Premium Plus
+        </Button>
       </DialogContent>
     </Dialog>
   );

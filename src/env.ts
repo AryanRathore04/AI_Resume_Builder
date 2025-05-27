@@ -33,6 +33,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().min(1),
     NEXT_PUBLIC_GEMINI_API_KEY: z.string().min(1),
     NEXT_PUBLIC_BASE_URL: z.string().min(1).url(),
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string(),
   },
 
   experimental__runtimeEnv: {
@@ -42,5 +43,6 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
     NEXT_PUBLIC_GEMINI_API_KEY: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
   },
 });

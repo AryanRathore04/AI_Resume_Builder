@@ -27,7 +27,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head>
           {/* Razorpay Checkout Script */}
-         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
         </head>
         <body className={inter.className} suppressHydrationWarning={true}>
           <ThemeProvider
