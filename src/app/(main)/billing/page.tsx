@@ -1,57 +1,33 @@
-import prisma from "@/lib/prisma";
-import stripe from "@/lib/stripe";
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
-import { Metadata } from "next";
-import Stripe from "stripe";
-import GetSubscriptionButton from "./GetSubscriptionButton";
-import { formatDate } from "date-fns";
+import prisma from "@/lib/prisma";
+import RazorpayCheckoutButton from "@/components/RazorpayCheckoutButton";
 import ManageSubscriptionButton from "./ManageSubscriptionButton";
 
-export const metadata: Metadata = {
-  title: "Billing",
-};
+export const metadata: Metadata = { title: "Billing" };
 
-const page = async () => {
+export default async function BillingPage() {
   const { userId } = await auth();
+  if (!userId) return null;
 
-  if (!userId) {
-    return null;
-  }
-
-  const subscription = await prisma.userSubscription.findUnique({
-    where: { userId },
-  });
-
-  const priceInfo = subscription
-    ? await stripe.prices.retrieve(subscription.stripePriceId, {
-        expand: ["product"],
-      })
-    : null;
+  const sub = await prisma.userSubscription.findUnique({ where: { userId } });
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 px-3 py-6">
+    <main className="mx-auto max-w-3xl p-6 space-y-4">
       <h1 className="text-3xl font-bold">Billing</h1>
       <p>
-        Your current plan:{" "}
-        <span className="font-bold">
-          {priceInfo ? (priceInfo.product as Stripe.Product).name : "Free"}
-        </span>
+        Your current plan: <strong>{sub?.razorpayStatus === "active" ? "Premium" : "Free"}</strong>
       </p>
-      {subscription ? (
-        <>
-          {subscription.stripeCancelAtPeriodEnd && (
-            <p className="text-destructive">
-              Your subscription will be canceled on{" "}
-              {formatDate(subscription.stripeCurrentPeriodEnd, "MMMM dd, yyyy")}
-            </p>
-          )}
-          <ManageSubscriptionButton />
-        </>
+      {sub?.razorpayCancelAtPeriodEnd && (
+        <p className="text-destructive">
+          Will cancel on {new Date(sub.razorpayCurrentPeriodEnd).toLocaleDateString()}
+        </p>
+      )}
+      {sub?.razorpayStatus === "active" ? (
+        <ManageSubscriptionButton />
       ) : (
-        <GetSubscriptionButton />
+        <RazorpayCheckoutButton amount={499} />
       )}
     </main>
   );
-};
-
-export default page;
+}

@@ -1,38 +1,82 @@
 "use client";
 
-import React, { useState } from "react";
+// Add Razorpay type to the window object
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import usePremiumModal from "@/hooks/usePremiumModal";
 import { toast } from "sonner";
-import { createCheckoutSession } from "./action";
-import { env } from "@/env";
+import { useUser } from "@clerk/nextjs"; // If using Clerk
 
 const PremiumFeatures = ["AI Tool", "Upto 3 resumes"];
 const PremiumPlusFeatures = ["Infinite resumes", "Design customizations"];
 
 const PremiumModal = () => {
   const { open, setOpen } = usePremiumModal();
-
   const [loading, setLoading] = useState(false);
+  const { user } = useUser(); // Optional, if you want email
 
-  async function handlePremiumClick(priceId: string) {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  const handleRazorpayCheckout = async (plan: "premium" | "premium-plus") => {
     try {
       setLoading(true);
-      const redirectUrl = await createCheckoutSession(priceId);
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      } else {
-        toast.error("Failed to get redirect URL. Please try again later.");
+
+      const res = await fetch("/api/razorpay/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await res.json();
+
+      if (!data.id) {
+        throw new Error("Invalid order ID");
       }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Resume AI",
+        description: `${plan === "premium" ? "Premium" : "Premium Plus"} Subscription`,
+        order_id: data.id,
+        handler: function (response: any) {
+          toast.success("Payment successful!");
+          console.log("Razorpay response:", response);
+          // Optionally call your backend to confirm payment
+        },
+        prefill: {
+          email: user?.primaryEmailAddress?.emailAddress || "",
+        },
+        theme: {
+          color: "#10b981",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
-      console.error("Error creating checkout session:", error);
-      toast.error("Something went wrong. Please try again later.");
+      console.error("Error during Razorpay checkout:", error);
+      toast.error("Payment failed. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog
@@ -61,11 +105,7 @@ const PremiumModal = () => {
                 ))}
               </ul>
               <Button
-                onClick={() =>
-                  handlePremiumClick(
-                    env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_MONTHLY,
-                  )
-                }
+                onClick={() => handleRazorpayCheckout("premium")}
                 disabled={loading}
               >
                 Get Premium
@@ -86,11 +126,7 @@ const PremiumModal = () => {
               </ul>
               <Button
                 variant="premium"
-                onClick={() =>
-                  handlePremiumClick(
-                    env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_PLUS_MONTHLY,
-                  )
-                }
+                onClick={() => handleRazorpayCheckout("premium-plus")}
                 disabled={loading}
               >
                 Get Premium Plus

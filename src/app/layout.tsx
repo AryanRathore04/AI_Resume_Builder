@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script"; // ⬅️ Import Script
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Razorpay Checkout Script */}
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
+        </head>
         <body className={inter.className} suppressHydrationWarning={true}>
           <ThemeProvider
             attribute="class"
@@ -32,7 +37,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <Toaster position="bottom-right" richColors/>
+            <Toaster position="bottom-right" richColors />
           </ThemeProvider>
         </body>
       </html>

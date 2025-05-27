@@ -1,30 +1,22 @@
 "use client";
-
-import LoadingButton from "@/components/LoadingButton";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createCustomerPortalSession } from "./action";
 
-const ManageSubscriptionButton = () => {
+export default function ManageSubscriptionButton() {
   const [loading, setLoading] = useState(false);
 
-  async function handleClick() {
+  const handleCancel = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const redirectUrl = await createCustomerPortalSession();
-      window.location.href = redirectUrl;
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to manage subscription. Please try again later.");
+      await fetch("/api/razorpay/cancel-subscription", { method: "POST" });
+      toast.success("Cancellation scheduled");
+      window.location.reload();
+    } catch {
+      toast.error("Cancellation failed");
     } finally {
       setLoading(false);
     }
-  }
-  return (
-    <LoadingButton onClick={handleClick} loading={loading}>
-      Manage Subscription
-    </LoadingButton>
-  );
-};
+  };
 
-export default ManageSubscriptionButton;
+  return <button onClick={handleCancel} disabled={loading}>Cancel Subscription</button>;
+}
